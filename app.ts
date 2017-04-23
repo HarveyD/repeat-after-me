@@ -7,10 +7,11 @@ var height: number = window.innerHeight;
 var width: number = window.innerWidth;
 
 /*
-CONSTANTS
+    CONSTANTS
 */
 const GROWTH_AMOUNT = 50;
-const GROWTH_SPEED = 1;
+const GROWTH_SPEED = 4;
+const BASE_RADIUS = width/12;
 
 enum ButtonType{
     Red = 0,
@@ -19,7 +20,24 @@ enum ButtonType{
     Yellow
 }
 
+enum ButtonState{
+    Growing =0,
+    Shrinking,
+    Idle
+}
+
+enum GameState{
+    AwaitPlayer=0,
+    Replaying,
+    GameOver,
+    Intro
+}
+
+/* 
+    Naughty Globals
+*/
 var seq: Sequence;
+var buttonList: Button[];
 
 function setup(){
     canvas = <HTMLCanvasElement>document.getElementById('canvas');
@@ -29,11 +47,12 @@ function setup(){
     ctx = canvas.getContext("2d");
 
     var b1: Button = new Button(ButtonType.Red, [248, 19, 1], width/4, height/4);
-    var b2: Button = new Button(ButtonType.Green, [5, 229, 1], width/4, height/1.5);
-    var b3: Button = new Button(ButtonType.Blue, [17, 65, 255], width/2, height/1.5);
-    var b4: Button = new Button(ButtonType.Yellow, [250, 227, 1], width/2, height/4);
+    var b2: Button = new Button(ButtonType.Green, [5, 229, 1], width/4, (3*height)/4);
+    var b3: Button = new Button(ButtonType.Blue, [17, 65, 255], (3*width)/4, (3*height)/4);
+    var b4: Button = new Button(ButtonType.Yellow, [250, 227, 1], (3*width)/4, height/4);
 
-    seq = new Sequence([b1, b2, b3, b4]);
+    buttonList = [b1, b2, b3, b4];
+    seq = new Sequence();
     
     seq.add();
     seq.add();
@@ -56,7 +75,7 @@ function gameLoop() {
     seq.poll();
 
     //Render Buttons.
-    for(let b of seq.buttons)
+    for(let b of buttonList)
     {
         b.draw();
     };
@@ -72,10 +91,10 @@ class Button{
     g: number;
     b: number;
 
-    activated: boolean;
+    state: ButtonState = ButtonState.Idle;
 
-    baseRadius: number = width/8;
-    currentRadius: number = width/8;
+    baseRadius: number = BASE_RADIUS;
+    currentRadius: number = BASE_RADIUS;
 
     constructor(id: ButtonType, colour: number[], x: number, y: number){
         this.id = id;
@@ -88,7 +107,20 @@ class Button{
     }
 
     public draw = () : void => {
-        this.grow();
+        switch(this.state){
+            case ButtonState.Growing:
+                this.currentRadius += GROWTH_SPEED;
+                if (this.currentRadius >= this.baseRadius + GROWTH_AMOUNT)
+                    this.state = ButtonState.Shrinking
+                break;
+            case ButtonState.Shrinking:
+                this.currentRadius -= GROWTH_SPEED;
+                if (this.currentRadius <= this.baseRadius)
+                    this.state = ButtonState.Idle
+                break;
+            default:
+                break;
+        }
 
         ctx.save();
         ctx.beginPath();
@@ -99,27 +131,11 @@ class Button{
         ctx.restore();
     }
 
-    private grow = () : void => {
-        //Grow and shrink circle
-        if(this.activated){
-            this.currentRadius += GROWTH_SPEED;
-            if(this.currentRadius >= this.baseRadius + GROWTH_AMOUNT){
-                this.activated = false;
-            }
-        }else{
-            if(this.currentRadius >= this.baseRadius){
-                this.currentRadius -= GROWTH_SPEED;
-            }
-        }
-
-        //Play assigned sound.
-    }
-
     public checkClick = (x: number, y: number): void => {
         let dist = Math.sqrt((x-this.x)*(x-this.x) + (y-this.y)*(y-this.y));
 
-        if(dist <= this.currentRadius && !this.activated){
-            this.activated = true;
+        if(dist <= this.currentRadius && this.state == ButtonState.Idle){
+            this.state = ButtonState.Growing;
 
             //Check if click matches next in sequence.
             seq.userGuess(this.id);
@@ -128,15 +144,13 @@ class Button{
 }
 
 class Sequence{
-    buttons: Button[];
     order: ButtonType[] = []; 
 
-    inReplay: boolean = true;
+    state: GameState = GameState.Intro;
     position: number = 0;
     currentButton: Button;
 
-    constructor(buttons: Button[]){
-        this.buttons = buttons;
+    constructor(){
     }
 
     public add(){
@@ -151,9 +165,8 @@ class Sequence{
             this.position += 1;
             //If guessed all correctly.
             if(this.order[this.position] == null){
-                console.log("hi!");
                 this.position = 0;
-                this.inReplay = true;
+                this.state = GameState.Replaying;
                 this.add();
             }
         }else{
@@ -162,21 +175,21 @@ class Sequence{
     }
 
     public poll(){
-        if(!this.inReplay){
+        if(this.state == GameState.AwaitPlayer){
             return;
         }
 
         //Reached the end of the sequence, reset and add one more. Wait for user input.
         if(this.order[this.position] == null){
             this.position = 0;
-            this.inReplay = false;
+            this.state = GameState.AwaitPlayer;
             return;
         }
 
-        if(this.currentButton == null || !this.currentButton.activated){
-            this.currentButton = this.buttons.find(b => b.id == this.order[this.position]);
-            this.currentButton.activated = true;
+        if(this.currentButton == null || this.currentButton.state == ButtonState.Idle){
+            this.currentButton = buttonList.find(b => b.id == this.order[this.position]);
             this.position += 1;
+            this.currentButton.state = ButtonState.Growing;
         }
     }
 
@@ -193,7 +206,7 @@ function getPosition(event)
     x -= canvas.offsetLeft;
     y -= canvas.offsetTop;
 
-    for(let b of seq.buttons)
+    for(let b of buttonList)
     {
         b.checkClick(x, y);
     };
