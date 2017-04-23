@@ -13,6 +13,15 @@ const GROWTH_AMOUNT = 50;
 const GROWTH_SPEED = 4;
 const BASE_RADIUS = width/12;
 
+const OPACITY_SPEED = 3;
+
+/*
+    COLOURS
+*/
+const BACKGROUND_NORMAL = 'rgb(105, 105, 105)';
+const BACKGROUND_SUCCESS = 'rgb(0, 150, 0)';
+const BACKGROUND_FAILURE = 'rgb(150, 0, 0)';
+
 enum ButtonType{
     Red = 0,
     Green,
@@ -29,9 +38,23 @@ enum ButtonState{
 enum GameState{
     AwaitPlayer=0,
     Replaying,
+    Success,
     GameOver,
     Intro
 }
+
+var opacity: number = 100;
+var opacityInc: boolean = false;
+
+/*
+    AUDIO
+*/
+var correct = new Audio('./correct.mp3');
+var gameover = new Audio('./gameover.mp3');
+
+var textX: number = width;
+var textVel: number = 0;
+var textGo: boolean = true;
 
 /* 
     Naughty Globals
@@ -55,8 +78,6 @@ function setup(){
     seq = new Sequence();
     
     seq.add();
-    seq.add();
-    seq.add();
 
     gameLoop();
 }
@@ -68,9 +89,29 @@ function gameLoop() {
     width = window.innerWidth;
     height = window.innerHeight;
 
-    //Background
-    ctx.fillStyle = 'rgb(105, 105, 105)';
-    ctx.fillRect(0, 0, width, height);
+    if(seq.state == GameState.Success || seq.state == GameState.GameOver){
+        flash(seq.state);
+    }else{
+        ctx.fillStyle = BACKGROUND_NORMAL;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    if(seq.state == GameState.GameOver){
+        ctx.fillStyle = 'black';
+        ctx.font = "64px Arial";
+        ctx.fillText("Click anywhere to try again.", textX, height/2);  
+
+        textX -= textVel;
+        if(textVel > 35 && textGo){
+            textGo = false;
+        }else if(textVel>0 && !textGo){
+            textVel --;
+        }
+
+        if(textGo){
+            textVel ++;
+        }
+    }
 
     seq.poll();
 
@@ -79,6 +120,40 @@ function gameLoop() {
     {
         b.draw();
     };
+}
+
+function flash(gameState: GameState){
+    ctx.globalAlpha = opacity/100;
+    ctx.fillStyle = BACKGROUND_NORMAL;
+    ctx.fillRect(0, 0, width, height);
+
+    //Background
+    ctx.globalAlpha = (100-opacity)/100;
+    if(gameState == GameState.Success){
+        ctx.fillStyle = BACKGROUND_SUCCESS;
+    }else{
+        ctx.fillStyle = BACKGROUND_FAILURE;
+    }
+    ctx.fillRect(0, 0, width, height);
+
+    if(opacityInc){
+        opacity += OPACITY_SPEED;
+    }else{
+        opacity -= OPACITY_SPEED;
+    }
+
+    if(opacity > 100){
+        opacityInc = false;
+        opacity = 100;
+        seq.state = GameState.Replaying;
+    }else if(opacity < 0){
+        if(gameState != GameState.GameOver){
+            opacityInc = true;
+        }
+    }
+
+    //Reset the alpha
+    ctx.globalAlpha = 1;
 }
 
 class Button{
@@ -134,7 +209,7 @@ class Button{
     public checkClick = (x: number, y: number): void => {
         let dist = Math.sqrt((x-this.x)*(x-this.x) + (y-this.y)*(y-this.y));
 
-        if(dist <= this.currentRadius && this.state == ButtonState.Idle){
+        if(dist <= this.currentRadius && seq.state == GameState.AwaitPlayer){
             this.state = ButtonState.Growing;
 
             //Check if click matches next in sequence.
@@ -160,22 +235,22 @@ class Sequence{
 
     public userGuess(b: ButtonType){
         if(this.order[this.position] == b){
-            console.log("correct!");
-
             this.position += 1;
             //If guessed all correctly.
             if(this.order[this.position] == null){
                 this.position = 0;
-                this.state = GameState.Replaying;
+                this.state = GameState.Success;
                 this.add();
+                correct.play();
             }
         }else{
-            console.log("incorrect!");
+            this.state = GameState.GameOver;
+            gameover.play();
         }
     }
 
     public poll(){
-        if(this.state == GameState.AwaitPlayer){
+        if(this.state == GameState.AwaitPlayer || this.state == GameState.Success || this.state == GameState.GameOver){
             return;
         }
 
