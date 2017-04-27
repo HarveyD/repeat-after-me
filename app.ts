@@ -52,9 +52,12 @@ var opacityInc: boolean = false;
 var correct = new Audio('./correct.mp3');
 var gameover = new Audio('./gameover.mp3');
 
-var textX: number = width;
-var textVel: number = 0;
-var textGo: boolean = true;
+var textOpVal: number = 0;
+var textOpInc: boolean = true;
+// var textSize: number = 0;
+// var textX: number = width;
+// var textVel: number = 0;
+//  var textGo: boolean = false;
 
 /* 
     Naughty Globals
@@ -66,7 +69,7 @@ function setup(){
     canvas = <HTMLCanvasElement>document.getElementById('canvas');
     canvas.width = width;
     canvas.height = height;
-    canvas.addEventListener('click', getPosition, false);
+    canvas.addEventListener('click', clickEvent, false);
     ctx = canvas.getContext("2d");
 
     var b1: Button = new Button(ButtonType.Red, [248, 19, 1], width/4, height/4);
@@ -86,8 +89,8 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 
     //Update height and width (responsive!)
-    width = window.innerWidth;
-    height = window.innerHeight;
+    // width = window.innerWidth;
+    // height = window.innerHeight;
 
     if(seq.state == GameState.Success || seq.state == GameState.GameOver){
         flash(seq.state);
@@ -97,29 +100,53 @@ function gameLoop() {
     }
 
     if(seq.state == GameState.GameOver){
-        ctx.fillStyle = 'black';
-        ctx.font = "64px Arial";
-        ctx.fillText("Click anywhere to try again.", textX, height/2);  
-
-        textX -= textVel;
-        if(textVel > 35 && textGo){
-            textGo = false;
-        }else if(textVel>0 && !textGo){
-            textVel --;
-        }
-
-        if(textGo){
-            textVel ++;
-        }
+        drawText("Click anywhere to try again.");
     }
 
-    seq.poll();
-
-    //Render Buttons.
+    //Draw round number
+    roundNumber();
+    // Poll for kicking off next button in sequence
+    seq.playback();
+    //Render buttons
     for(let b of buttonList)
     {
         b.draw();
     };
+}
+
+function roundNumber(){
+    ctx.fillStyle = 'white';
+    ctx.font = '48px Gotham, Helvetica Neue, sans-serif';
+    ctx.fillText("Round: " + seq.order.length, 32, 64);  
+}
+
+function drawText(s: string){
+    ctx.fillStyle = `rgba(255, 255, 255, ${textOpVal/100}`;
+    ctx.font = (width/16)+'px Gotham, Helvetica Neue, sans-serif';
+    ctx.fillText(s, width/8, height/2);
+    console.log(textOpVal);
+
+    textOpInc ? textOpVal += 2 : textOpVal -= 2;
+    if(textOpVal >= 100){
+        textOpInc = false
+    }else if(textOpVal <= 0){
+        textOpInc = true;
+    }
+
+    // ctx.fillStyle = 'black';
+    // ctx.font = "64px Arial";
+    // ctx.fillText(s, textX, height/2);  
+
+    // textX -= textVel;
+    // if(textVel > width/65 && textGo){
+    //     textGo = false;
+    // }else if(textVel>0 && !textGo){
+    //     textVel --;
+    // }
+
+    // if(textGo){
+    //     textVel ++;
+    // }
 }
 
 function flash(gameState: GameState){
@@ -142,11 +169,13 @@ function flash(gameState: GameState){
         opacity -= OPACITY_SPEED;
     }
 
+    //Finished flashing, start replay.
     if(opacity > 100){
         opacityInc = false;
         opacity = 100;
         seq.state = GameState.Replaying;
     }else if(opacity < 0){
+        // Colour screen red until player clicks to try again.
         if(gameState != GameState.GameOver){
             opacityInc = true;
         }
@@ -209,11 +238,9 @@ class Button{
     public checkClick = (x: number, y: number): void => {
         let dist = Math.sqrt((x-this.x)*(x-this.x) + (y-this.y)*(y-this.y));
 
-        if(dist <= this.currentRadius && seq.state == GameState.AwaitPlayer){
-            this.state = ButtonState.Growing;
-
+        if(dist <= this.currentRadius && seq.state == GameState.AwaitPlayer && this.state == ButtonState.Idle){
             //Check if click matches next in sequence.
-            seq.userGuess(this.id);
+            seq.userGuess(this);
         }
     }
 }
@@ -221,9 +248,9 @@ class Button{
 class Sequence{
     order: ButtonType[] = []; 
 
-    state: GameState = GameState.Intro;
+    state: GameState = GameState.Replaying;
     position: number = 0;
-    currentButton: Button;
+    currentButton: Button; // Tracks the button being replayed
 
     constructor(){
     }
@@ -233,9 +260,12 @@ class Sequence{
         this.order.push(ButtonType[ButtonType[rand]]);
     }
 
-    public userGuess(b: ButtonType){
-        if(this.order[this.position] == b){
+    public userGuess(b: Button){
+        // Correct Selection
+        if(this.order[this.position] == b.id){
             this.position += 1;
+            b.state = ButtonState.Growing;
+
             //If guessed all correctly.
             if(this.order[this.position] == null){
                 this.position = 0;
@@ -243,24 +273,26 @@ class Sequence{
                 this.add();
                 correct.play();
             }
+        //Incorrect selection
         }else{
             this.state = GameState.GameOver;
             gameover.play();
         }
     }
 
-    public poll(){
-        if(this.state == GameState.AwaitPlayer || this.state == GameState.Success || this.state == GameState.GameOver){
+    public playback(){ 
+        if(this.state != GameState.Replaying){
             return;
         }
 
-        //Reached the end of the sequence, reset and add one more. Wait for user input.
+        // Checks whether the end of the automated replay is done, then switch to waiting for player.
         if(this.order[this.position] == null){
             this.position = 0;
             this.state = GameState.AwaitPlayer;
             return;
         }
 
+        // Automated replay of the buttons.
         if(this.currentButton == null || this.currentButton.state == ButtonState.Idle){
             this.currentButton = buttonList.find(b => b.id == this.order[this.position]);
             this.position += 1;
@@ -269,12 +301,20 @@ class Sequence{
     }
 
     public reset(){
+        opacity=100;
         this.order = [];
+        this.add();
     }
 }
 
-function getPosition(event)
+function clickEvent(event)
 {
+    //Reset Game
+    if(seq.state == GameState.GameOver){
+        seq.reset();
+        seq.state = GameState.Replaying;
+    }
+
     var x = event.x;
     var y = event.y;
 
