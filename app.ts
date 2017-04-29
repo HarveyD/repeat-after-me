@@ -72,10 +72,10 @@ function setup(){
     canvas.addEventListener('click', clickEvent, false);
     ctx = canvas.getContext("2d");
 
-    var b1: Button = new Button(ButtonType.Red, [248, 19, 1], width/4, height/4);
-    var b2: Button = new Button(ButtonType.Green, [5, 229, 1], width/4, (3*height)/4);
-    var b3: Button = new Button(ButtonType.Blue, [17, 65, 255], (3*width)/4, (3*height)/4);
-    var b4: Button = new Button(ButtonType.Yellow, [250, 227, 1], (3*width)/4, height/4);
+    var b1: Button = new Button(ButtonType.Red, [248, 19, 1], width/4, height/4, new Audio('./blue.wav'));
+    var b2: Button = new Button(ButtonType.Green, [5, 229, 1], width/4, (3*height)/4, new Audio('./green.wav'));
+    var b3: Button = new Button(ButtonType.Blue, [17, 65, 255], (3*width)/4, (3*height)/4, new Audio('./blue.wav'));
+    var b4: Button = new Button(ButtonType.Yellow, [250, 227, 1], (3*width)/4, height/4, new Audio('./yellow.wav'));
 
     buttonList = [b1, b2, b3, b4];
     seq = new Sequence();
@@ -124,7 +124,6 @@ function drawText(s: string){
     ctx.fillStyle = `rgba(255, 255, 255, ${textOpVal/100}`;
     ctx.font = (width/16)+'px Gotham, Helvetica Neue, sans-serif';
     ctx.fillText(s, width/8, height/2);
-    console.log(textOpVal);
 
     textOpInc ? textOpVal += 2 : textOpVal -= 2;
     if(textOpVal >= 100){
@@ -196,11 +195,12 @@ class Button{
     b: number;
 
     state: ButtonState = ButtonState.Idle;
+    sound: HTMLAudioElement;
 
     baseRadius: number = BASE_RADIUS;
     currentRadius: number = BASE_RADIUS;
 
-    constructor(id: ButtonType, colour: number[], x: number, y: number){
+    constructor(id: ButtonType, colour: number[], x: number, y: number, sound: HTMLAudioElement){
         this.id = id;
         this.r = colour[0];
         this.g = colour[1];
@@ -208,6 +208,8 @@ class Button{
 
         this.x = x;
         this.y = y;
+
+        this.sound = sound;
     }
 
     public draw = () : void => {
@@ -243,6 +245,10 @@ class Button{
             seq.userGuess(this);
         }
     }
+
+    public playAudio(){
+        this.sound.play();
+    }
 }
 
 class Sequence{
@@ -265,6 +271,7 @@ class Sequence{
         if(this.order[this.position] == b.id){
             this.position += 1;
             b.state = ButtonState.Growing;
+            b.playAudio();
 
             //If guessed all correctly.
             if(this.order[this.position] == null){
@@ -297,6 +304,7 @@ class Sequence{
             this.currentButton = buttonList.find(b => b.id == this.order[this.position]);
             this.position += 1;
             this.currentButton.state = ButtonState.Growing;
+            this.currentButton.playAudio();
         }
     }
 
