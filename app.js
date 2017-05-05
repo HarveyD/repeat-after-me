@@ -4,7 +4,7 @@
 var canvas;
 var ctx;
 var height = window.innerHeight;
-var width = window.innerWidth;
+var width = window.innerWidth; 
 /*
     CONSTANTS
 */
