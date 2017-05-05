@@ -9,7 +9,7 @@ var width: number = window.innerWidth;
 /*
     CONSTANTS
 */
-const GROWTH_AMOUNT = 50;   
+const GROWTH_AMOUNT = 50;
 const GROWTH_SPEED = 4;
 const BASE_RADIUS = width/12;
 
