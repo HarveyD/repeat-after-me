@@ -1,4 +1,10 @@
 /*
+    WEBPACK LOADS
+*/
+declare var require:any;
+var styles = require('./app.css');
+
+/*
     CANVAS VARIABLES
 */
 var canvas: HTMLCanvasElement;
@@ -49,15 +55,11 @@ var opacityInc: boolean = false;
 /*
     AUDIO
 */
-var correct = new Audio('./correct.mp3');
-var gameover = new Audio('./gameover.mp3');
+var correct = new Audio(require("./correct.mp3"));
+var gameover = new Audio(require("./gameover.mp3"));
 
 var textOpVal: number = 0;
 var textOpInc: boolean = true;
-// var textSize: number = 0;
-// var textX: number = width;
-// var textVel: number = 0;
-//  var textGo: boolean = false;
 
 /* 
     Naughty Globals
@@ -72,10 +74,10 @@ function setup(){
     canvas.addEventListener('click', clickEvent, false);
     ctx = canvas.getContext("2d");
 
-    var b1: Button = new Button(ButtonType.Red, [248, 19, 1], width/4, height/4, new Audio('./blue.wav'));
-    var b2: Button = new Button(ButtonType.Green, [5, 229, 1], width/4, (3*height)/4, new Audio('./green.wav'));
-    var b3: Button = new Button(ButtonType.Blue, [17, 65, 255], (3*width)/4, (3*height)/4, new Audio('./blue.wav'));
-    var b4: Button = new Button(ButtonType.Yellow, [250, 227, 1], (3*width)/4, height/4, new Audio('./yellow.wav'));
+    var b1: Button = new Button(ButtonType.Red, [248, 19, 1], width/4, height/4, new Audio(require("./blue.mp3")));
+    var b2: Button = new Button(ButtonType.Green, [5, 229, 1], width/4, (3*height)/4, new Audio(require("./green.mp3")));
+    var b3: Button = new Button(ButtonType.Blue, [17, 65, 255], (3*width)/4, (3*height)/4, new Audio(require("./blue.mp3")));
+    var b4: Button = new Button(ButtonType.Yellow, [250, 227, 1], (3*width)/4, height/4, new Audio(require("./yellow.mp3")));
 
     buttonList = [b1, b2, b3, b4];
     seq = new Sequence();
@@ -131,21 +133,6 @@ function drawText(s: string){
     }else if(textOpVal <= 0){
         textOpInc = true;
     }
-
-    // ctx.fillStyle = 'black';
-    // ctx.font = "64px Arial";
-    // ctx.fillText(s, textX, height/2);  
-
-    // textX -= textVel;
-    // if(textVel > width/65 && textGo){
-    //     textGo = false;
-    // }else if(textVel>0 && !textGo){
-    //     textVel --;
-    // }
-
-    // if(textGo){
-    //     textVel ++;
-    // }
 }
 
 function flash(gameState: GameState){
@@ -262,8 +249,8 @@ class Sequence{
     }
 
     public add(){
-        let rand = Math.floor(Math.random()*4);
-        this.order.push(ButtonType[ButtonType[rand]]);
+        let rand: number = Math.floor(Math.random()*4);
+        this.order.push(rand);
     }
 
     public userGuess(b: Button){
@@ -315,7 +302,7 @@ class Sequence{
     }
 }
 
-function clickEvent(event)
+function clickEvent(event: any)
 {
     //Reset Game
     if(seq.state == GameState.GameOver){
