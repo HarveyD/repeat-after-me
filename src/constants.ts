@@ -16,13 +16,13 @@ export class Colours {
 }
 
 export class Sounds {
-   public static Correct = new Audio(require("./assets/correct.mp3"));
-   public static Gameover = new Audio(require("./assets/gameover.mp3"));
+   public static Correct = new Audio(require("../assets/correct.mp3"));
+   public static Gameover = new Audio(require("../assets/gameover.mp3"));
 
-   public static Red = new Audio(require("./assets/red.mp3"));
-   public static Green = new Audio(require("./assets/green.mp3"))
-   public static Blue =  new Audio(require("./assets/blue.mp3"))
-   public static Yellow = new Audio(require("./assets/yellow.mp3"))
+   public static Red = new Audio(require("../assets/red.mp3"));
+   public static Green = new Audio(require("../assets/green.mp3"))
+   public static Blue =  new Audio(require("../assets/blue.mp3"))
+   public static Yellow = new Audio(require("../assets/yellow.mp3"))
 }
 
 export enum ButtonType{
