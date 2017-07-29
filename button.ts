@@ -14,7 +14,7 @@ export default class Button {
     state: ButtonState = ButtonState.Idle;
     sound: HTMLAudioElement;
 
-    baseRadius: number = Gameplay.BASE_RADIUS;
+    baseRadius: number;
     currentRadius: number = Gameplay.BASE_RADIUS;
 
     constructor(id: ButtonType, colour: number[], x: number, y: number, sound: HTMLAudioElement){
@@ -27,36 +27,49 @@ export default class Button {
         this.y = y;
 
         this.sound = sound;
+
+        this.baseRadius = Gameplay.BASE_RADIUS;
+        this.currentRadius = Gameplay.BASE_RADIUS;
+
+        console.log(window.innerWidth);
+        // Need to make the circles bigger on mobile
+        if(window.innerWidth <= 1000){
+            this.currentRadius = Gameplay.BASE_RADIUS_MOB;
+            this.baseRadius = Gameplay.BASE_RADIUS_MOB;
+        }
     }
 
-    public resize = () : void => {
+    public resize() : void {
         switch(this.state){
             case ButtonState.Growing:
                 this.currentRadius += Gameplay.GROWTH_SPEED;
-                if (this.currentRadius >= this.baseRadius + Gameplay.GROWTH_AMOUNT)
+                if (this.currentRadius >= this.baseRadius + Gameplay.GROWTH_AMOUNT){
                     this.state = ButtonState.Shrinking
+                }
                 break;
             case ButtonState.Shrinking:
                 this.currentRadius -= Gameplay.GROWTH_SPEED;
-                if (this.currentRadius <= this.baseRadius)
+                if (this.currentRadius <= this.baseRadius){
                     this.state = ButtonState.Idle
+                }
                 break;
             default:
                 break;
         }
     }
 
-    public checkClick = (x: number, y: number): boolean => {
+    public checkClick (x: number, y: number): boolean {
         let dist = Math.sqrt((x-this.x)*(x-this.x) + (y-this.y)*(y-this.y));
 
-        if(dist <= this.currentRadius  && this.state == ButtonState.Idle){
+        if (dist <= this.currentRadius  && this.state == ButtonState.Idle) {
             return true;
         }
 
         return false;
     }
 
-    public playAudio(){
+    public select() {
+        this.state = ButtonState.Growing;
         this.sound.play();
     }
 }

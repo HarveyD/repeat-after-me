@@ -6,6 +6,7 @@ export class Gameplay {
     public static readonly OPACITY_SPEED = 3;
 
     public static readonly BASE_RADIUS = window.innerWidth/12;
+    public static readonly BASE_RADIUS_MOB = window.innerHeight/10;
 }
 
 export class Colours {
