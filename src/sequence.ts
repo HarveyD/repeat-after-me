@@ -11,17 +11,17 @@ export default class Sequence{
     constructor () {}
 
     public add() {
-        let rand: number = Math.floor(Math.random()*4);
+        let rand: number = Math.floor(Math.random() * 4);
         this.order.push(rand);
     }
 
     public userGuess(b: Button) {
-        if(this.order[this.position] == b.id) {
+        if (this.order[this.position] === b.id) {
             this.position += 1;
             b.select();
 
             //If guessed all correctly.
-            if(this.order[this.position] == null){
+            if (this.order[this.position] == null){
                 this.position = 0;
                 this.state = GameState.Success;
                 this.add();
@@ -34,7 +34,7 @@ export default class Sequence{
     }
 
     public playback(buttonList: Button[]) { 
-        if(this.state != GameState.Replaying) {
+        if (this.state !== GameState.Replaying) {
             return;
         }
 

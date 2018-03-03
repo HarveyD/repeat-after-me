@@ -1,4 +1,4 @@
-declare var require:any;
+declare var require : any;
 
 export class Gameplay {
     public static readonly GROWTH_AMOUNT = 50;
