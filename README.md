@@ -6,9 +6,10 @@ It's just a simple Simon Says clone. If you don't know what it is look at [Wikip
 
 Play the game [on my website](https://www.harveydelaney.com/repeat-after-me)
 
-# Development
+## Development
 Run the following:
-1: `npm install`
-2: `webpack`
 
-You'll need to run `webpack` everytime you make a change. Haven't introduced live reload yet.
+1. `npm install`
+2. `webpack`
+
+You'll need to run `webpack` everytime you make a change. I haven't had the chance to introduce live reloading yet.
