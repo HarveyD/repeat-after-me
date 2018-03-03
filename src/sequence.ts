@@ -11,7 +11,7 @@ export default class Sequence{
     constructor () {}
 
     public add() {
-        let rand: number = Math.floor(Math.random()*4);
+        let rand: number = Math.floor(Math.random() * 4);
         this.order.push(rand);
     }
 
@@ -25,11 +25,15 @@ export default class Sequence{
                 this.position = 0;
                 this.state = GameState.Success;
                 this.add();
-                Sounds.Correct.play();
+                Sounds.Correct.addEventListener('canplaythrough', function() {
+                    this.play();
+                 });
             }
         } else {
             this.state = GameState.GameOver;
-            Sounds.Gameover.play();
+            Sounds.Gameover.addEventListener('canplaythrough', function() {
+                this.play();
+             });
         }
     }
 

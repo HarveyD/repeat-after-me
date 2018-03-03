@@ -26,6 +26,11 @@ export default class Button {
         this.y = y;
 
         this.sound = sound;
+        /* the below is to fix the issue where
+        ** iOS won't play audio on the first click
+        */ 
+        this.sound.play();
+        this.sound.pause();
 
         this.baseRadius = this.currentRadius = innerWidth < Gameplay.MOB_WIDTH ? 
             Gameplay.BASE_RADIUS_MOB :
@@ -63,6 +68,8 @@ export default class Button {
 
     public select() {
         this.state = ButtonState.Growing;
-        this.sound.play();
+        this.sound.addEventListener('canplaythrough', function() {
+            this.play();
+         });
     }
 }
