@@ -1,5 +1,4 @@
-import { GameState, ButtonState, ButtonType } from './constants';
-import { Colours, Gameplay } from './constants';
+import { GameState, ButtonState, ButtonType, Colours, Gameplay } from './constants';
 
 export default class Button {
     id: ButtonType;
@@ -15,9 +14,9 @@ export default class Button {
     sound: HTMLAudioElement;
 
     baseRadius: number;
-    currentRadius: number = Gameplay.BASE_RADIUS;
+    currentRadius: number;
 
-    constructor(id: ButtonType, colour: number[], x: number, y: number, sound: HTMLAudioElement){
+    constructor(id: ButtonType, colour: number[], x: number, y: number, sound: HTMLAudioElement) {
         this.id = id;
         this.r = colour[0];
         this.g = colour[1];
@@ -28,28 +27,22 @@ export default class Button {
 
         this.sound = sound;
 
-        this.baseRadius = Gameplay.BASE_RADIUS;
-        this.currentRadius = Gameplay.BASE_RADIUS;
-
-        console.log(window.innerWidth);
-        // Need to make the circles bigger on mobile
-        if(window.innerWidth <= 1000){
-            this.currentRadius = Gameplay.BASE_RADIUS_MOB;
-            this.baseRadius = Gameplay.BASE_RADIUS_MOB;
-        }
+        this.baseRadius = this.currentRadius = innerWidth < Gameplay.MOB_WIDTH ? 
+            Gameplay.BASE_RADIUS_MOB :
+            Gameplay.BASE_RADIUS;
     }
 
     public resize() : void {
         switch(this.state){
             case ButtonState.Growing:
                 this.currentRadius += Gameplay.GROWTH_SPEED;
-                if (this.currentRadius >= this.baseRadius + Gameplay.GROWTH_AMOUNT){
+                if (this.currentRadius >= this.baseRadius + Gameplay.GROWTH_AMOUNT) {
                     this.state = ButtonState.Shrinking
                 }
                 break;
             case ButtonState.Shrinking:
                 this.currentRadius -= Gameplay.GROWTH_SPEED;
-                if (this.currentRadius <= this.baseRadius){
+                if (this.currentRadius <= this.baseRadius) {
                     this.state = ButtonState.Idle
                 }
                 break;
@@ -59,9 +52,9 @@ export default class Button {
     }
 
     public checkClick (x: number, y: number): boolean {
-        let dist = Math.sqrt((x-this.x)*(x-this.x) + (y-this.y)*(y-this.y));
+        let dist = Math.sqrt((x - this.x) * (x - this.x) + (y - this.y) * (y - this.y));
 
-        if (dist <= this.currentRadius  && this.state == ButtonState.Idle) {
+        if (dist <= this.currentRadius  && this.state === ButtonState.Idle) {
             return true;
         }
 

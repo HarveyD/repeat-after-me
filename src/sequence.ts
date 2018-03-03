@@ -39,15 +39,15 @@ export default class Sequence{
         }
 
         // Checks whether the end of the automated replay is done, then switch to waiting for player.
-        if(this.order[this.position] == null) {
+        if (this.order[this.position] == null) {
             this.position = 0;
             this.state = GameState.AwaitPlayer;
             return;
         }
 
         // Automated replay of the buttons.
-        if(this.currentButton == null || this.currentButton.state == ButtonState.Idle) {
-            this.currentButton = buttonList.find(b => b.id == this.order[this.position]);
+        if (this.currentButton == null || this.currentButton.state === ButtonState.Idle) {
+            this.currentButton = buttonList.find(b => b.id === this.order[this.position]);
             this.position += 1;
 
             this.currentButton.select();

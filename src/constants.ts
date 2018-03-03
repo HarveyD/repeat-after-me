@@ -5,8 +5,9 @@ export class Gameplay {
     public static readonly GROWTH_SPEED = 4;
     public static readonly OPACITY_SPEED = 3;
 
-    public static readonly BASE_RADIUS = window.innerWidth/12;
-    public static readonly BASE_RADIUS_MOB = window.innerHeight/10;
+    public static readonly MOB_WIDTH = 780;
+    public static readonly BASE_RADIUS = window.innerWidth / 10;
+    public static readonly BASE_RADIUS_MOB = window.innerWidth / 6;
 }
 
 export class Colours {
@@ -25,20 +26,20 @@ export class Sounds {
    public static Yellow = new Audio(require("../assets/yellow.mp3"))
 }
 
-export enum ButtonType{
+export enum ButtonType {
     Red = 0,
     Green,
     Blue,
     Yellow
 }
 
-export enum ButtonState{
+export enum ButtonState {
     Growing = 0,
     Shrinking,
     Idle
 }
 
-export enum GameState{
+export enum GameState {
     AwaitPlayer = 0,
     Replaying,
     Success,

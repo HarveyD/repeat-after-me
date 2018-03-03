@@ -1,6 +1,7 @@
-import { Colours, Gameplay, Sounds, // Constants
-         GameState, ButtonState, ButtonType // Enums
-        } from './constants';
+import {
+    Colours, Gameplay, Sounds, // Constants
+    GameState, ButtonState, ButtonType // Enums
+} from './constants';
 
 import Sequence from './sequence';
 import Button from './button';
@@ -14,6 +15,7 @@ export default class Board {
     private opacity: number = 100;
     private opacityInc: boolean = false;
 
+    private text: string = "Click anywhere to try again"; // Todo: replace with more extensible way of adding different text
     private textOpVal: number = 0;
     private textOpInc: boolean = true;
 
@@ -27,11 +29,15 @@ export default class Board {
         this.canvas.addEventListener('click', this.clickEvent, false);
         this.ctx = this.canvas.getContext("2d");
 
-        var b1: Button = new Button(ButtonType.Red, [248, 19, 1], this.width/4, this.height/4, Sounds.Red);
-        var b2: Button = new Button(ButtonType.Green, [5, 229, 1], this.width/4, (3*this.height)/4, Sounds.Green);
-        var b3: Button = new Button(ButtonType.Blue, [17, 65, 255], (3 * this.width)/4, (3*this.height)/4, Sounds.Blue);
-        var b4: Button = new Button(ButtonType.Yellow, [250, 227, 1], (3 * this.width)/4, this.height/4, Sounds.Yellow);
-        
+        this.initButtons();
+    }
+
+    private initButtons(): void {
+        var b1: Button = new Button(ButtonType.Red, [248, 19, 1], this.width / 4, this.height / 4, Sounds.Red);
+        var b2: Button = new Button(ButtonType.Green, [5, 229, 1], this.width / 4, (3 * this.height) / 4, Sounds.Green);
+        var b3: Button = new Button(ButtonType.Blue, [17, 65, 255], (3 * this.width) / 4, (3 * this.height) / 4, Sounds.Blue);
+        var b4: Button = new Button(ButtonType.Yellow, [250, 227, 1], (3 * this.width) / 4, this.height / 4, Sounds.Yellow);
+
         this.buttonList = [b1, b2, b3, b4];
     }
 
@@ -39,11 +45,13 @@ export default class Board {
         this.renderBackground();
         this.renderRoundNumber();
         this.renderButtons();
+        this.renderText();
+
         this.seq.playback(this.buttonList);
     }
 
     private renderBackground(): void {
-        if (this.seq.state == GameState.Success || this.seq.state == GameState.GameOver) {
+        if (this.seq.state === GameState.Success || this.seq.state === GameState.GameOver) {
             this.flash(this.seq.state);
         } else {
             this.ctx.fillStyle = Colours.BACKGROUND_NORMAL;
@@ -68,43 +76,44 @@ export default class Board {
     private renderRoundNumber(): void {
         this.ctx.fillStyle = 'white';
         this.ctx.font = '48px Gotham, Helvetica Neue, sans-serif';
-        this.ctx.fillText("Round: " + this.seq.order.length, 32, 64);  
+        this.ctx.fillText("Round: " + this.seq.order.length, 32, 64);
     }
 
-    private renderText(s: string): void{
-        if (this.seq.state == GameState.GameOver) {
-            this.renderText("Click anywhere to try again.");
+    private renderText(): void {
+        if (this.seq.state !== GameState.GameOver) {
+            return;
         }
 
-        this.ctx.fillStyle = `rgba(255, 255, 255, ${this.textOpVal/100}`;
-        this.ctx.font = (this.width/16)+'px Gotham, Helvetica Neue, sans-serif';
-        this.ctx.fillText(s, this.width/8, this.height/2);
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${this.textOpVal / 100}`;
+        this.ctx.font = (this.width / 16) + 'px Gotham, Helvetica Neue, sans-serif';
+        this.ctx.fillText(this.text, this.width / 8, this.height / 2);
 
         this.textOpInc ? this.textOpVal += 2 : this.textOpVal -= 2;
-        if(this.textOpVal >= 100){
+
+        if (this.textOpVal >= 100) {
             this.textOpInc = false
-        }else if(this.textOpVal <= 0){
+        } else if (this.textOpVal <= 0) {
             this.textOpInc = true;
         }
     }
 
     private flash(gameState: GameState): void {
-        this.ctx.globalAlpha = this.opacity/100;
+        this.ctx.globalAlpha = this.opacity / 100;
         this.ctx.fillStyle = Colours.BACKGROUND_NORMAL;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
         //Background
-        this.ctx.globalAlpha = (100 - this.opacity)/100;
-        if(gameState == GameState.Success){
+        this.ctx.globalAlpha = (100 - this.opacity) / 100;
+        if (gameState == GameState.Success) {
             this.ctx.fillStyle = Colours.BACKGROUND_SUCCESS;
-        }else{
+        } else {
             this.ctx.fillStyle = Colours.BACKGROUND_FAILURE;
         }
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        if(this.opacityInc){
+        if (this.opacityInc) {
             this.opacity += Gameplay.OPACITY_SPEED;
-        }else{
+        } else {
             this.opacity -= Gameplay.OPACITY_SPEED;
         }
 
@@ -115,7 +124,7 @@ export default class Board {
             this.seq.state = GameState.Replaying;
         } else if (this.opacity < 0) {
             // Colour screen red until player clicks to try again.
-            if (gameState != GameState.GameOver) {
+            if (gameState !== GameState.GameOver) {
                 this.opacityInc = true;
             }
         }
@@ -126,7 +135,7 @@ export default class Board {
 
     private clickEvent = (event: any): void => {
         //Reset Game
-        if(this.seq.state == GameState.GameOver){
+        if (this.seq.state == GameState.GameOver) {
             this.reset();
             return;
         }
@@ -138,7 +147,7 @@ export default class Board {
         y -= this.canvas.offsetTop;
 
         for (let b of this.buttonList) {
-            if(b.checkClick(x, y) && this.seq.state == GameState.AwaitPlayer) {
+            if (b.checkClick(x, y) && this.seq.state === GameState.AwaitPlayer) {
                 //Check if click matches next in sequence.
                 this.seq.userGuess(b);
             };
