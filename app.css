@@ -3,3 +3,7 @@ html, body {
     margin: 0px;
     padding: 0px;
 }
+
+canvas {
+    -webkit-tap-highlight-color: transparent;
+}
