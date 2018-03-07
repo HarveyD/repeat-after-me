@@ -2,7 +2,7 @@ declare var require : any;
 
 export class Gameplay {
     public static readonly GROWTH_AMOUNT = 50;
-    public static readonly GROWTH_SPEED = 4;
+    public static readonly GROWTH_SPEED = 3;
     public static readonly OPACITY_SPEED = 3;
 
     public static readonly MOB_WIDTH = 780;
