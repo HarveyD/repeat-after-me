@@ -12,6 +12,9 @@ Play the game [on my website](https://www.harveydelaney.com/repeatafterme)
 Run the following:
 
 1. `npm install`
-2. `webpack`
+2. `npm run dev`
+3. Navigate to newly created `dist` directory and open `index.html`.
 
-You'll need to run `webpack` everytime you make a change. I haven't had the chance to introduce live reloading yet.
+## Production
+1. `npm install`
+2. `npm run build`
