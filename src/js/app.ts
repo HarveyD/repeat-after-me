@@ -1,24 +1,24 @@
 /* WEBPACK LOADER */
 declare var require: any;
-var styles = require('../app.css');
+var styles = require('../css/app.css');
 
 import Board from './board';
 
 var board: Board;
 
 function setup() {
-    board = new Board();
-    board.seq.add();
+	board = new Board();
+	board.seq.add();
 
-    gameLoop();
+	gameLoop();
 }
 
 function gameLoop() {
-    requestAnimationFrame(gameLoop);
+	requestAnimationFrame(gameLoop);
 
-    board.render();
+	board.render();
 }
 
 window.onload = () => {
-    setup();
+	setup();
 }
