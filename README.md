@@ -1,5 +1,7 @@
 # Repeat After Me (Simon Says)
 
+[![Build Status](https://jenkins.harveydelaney.com/buildStatus/icon?job=repeat-after-me)](https://jenkins.harveydelaney.com/job/repeat-after-me/)
+
 ![RepeatAfterMe](https://i.imgur.com/FVXiFUg.png)
 
 A simple JS canvas game made to help myself become better at writing cleaner JS. Also used TypeScript to learn what benefits it brings (I now love TypeScript).
